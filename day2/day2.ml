@@ -15,7 +15,6 @@ let parse_with_error_handling lexbuf =
     print_endline ("Syntax error at " ^ Lexing.lexeme lexbuf);
     exit 1
   | Inputlex.SyntaxError msg ->
-    (* Handle lexer error here *)
     print_endline ("Lexer error: " ^ msg);
     exit 1
 

@@ -3,7 +3,6 @@
     open Lexing 
     
     exception SyntaxError of string 
-
     let next_line lexbuf = 
      let pos = lexbuf.lex_curr_p in
      lexbuf.lex_curr_p <-
@@ -23,9 +22,11 @@ rule token = parse
 | newline {next_line lexbuf; token lexbuf} 
 | num as i {INTTOK (int_of_string i)}
 | "Game" {GAMETOK}
-| "red" {REDTOK}
-| "blue" {BLUETOK}
-| "green" {GREENTOK}
+| colors { match Lexing.lexeme lexbuf with
+             | "blue" -> BLUETOK
+             | "red" -> REDTOK
+             | "green" -> GREENTOK
+             | _ -> raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf))}
 | ";" {SEMICOLONTOK}
 | "," {COMMATOK}
 | ":" {COLONTOK}
