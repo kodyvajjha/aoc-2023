@@ -9,14 +9,16 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 
 let () = Printexc.record_backtrace true
 
-let parse_with_error_handling lexbuf =
-  try Inputgram.inputfile Inputlex.token lexbuf with
-  | Inputgram.Error ->
-    print_endline ("Syntax error at " ^ Lexing.lexeme lexbuf);
-    exit 1
-  | Inputlex.SyntaxError msg ->
-    print_endline ("Lexer error: " ^ msg);
-    exit 1
+module Parse = struct
+  let buffer lexbuf =
+    try Inputgram.inputfile Inputlex.token lexbuf with
+    | Inputgram.Error ->
+      print_endline ("Syntax error at " ^ Lexing.lexeme lexbuf);
+      exit 1
+    | Inputlex.SyntaxError msg ->
+      print_endline ("Lexer error: " ^ msg);
+      exit 1
+end
 
 module Part1 = struct
   open Syntax
@@ -43,11 +45,35 @@ module Part1 = struct
         g.id)
 end
 
+module Part2 = struct
+  open Syntax
+
+  let power (g : game) =
+    let minblue =
+      CCList.fold_left max 1 (CCList.filter_map (fun c -> c.blue) g.grabs)
+    in
+    let minred =
+      CCList.fold_left max 1 (CCList.filter_map (fun c -> c.red) g.grabs)
+    in
+    let mingreen =
+      CCList.fold_left max 1 (CCList.filter_map (fun c -> c.green) g.grabs)
+    in
+    minblue * minred * mingreen
+
+  let ans (r : record) = CCList.fold_left ( + ) 0 (CCList.map power r)
+end
+
 let () =
   let ic = open_in "./input.txt" in
   let lexbuf = Lexing.from_channel ic in
-  let games : Syntax.record = parse_with_error_handling lexbuf in
+  let games : Syntax.record = Parse.buffer lexbuf in
   let games_possible =
     CCList.filter (fun g -> not (Part1.game_not_possible g)) games
   in
   CCFormat.printf "@.%d" (Part1.ans games_possible)
+
+let () =
+  let ic = open_in "./input.txt" in
+  let lexbuf = Lexing.from_channel ic in
+  let games : Syntax.record = Parse.buffer lexbuf in
+  CCFormat.printf "@.%d" (Part2.ans games)

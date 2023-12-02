@@ -49,16 +49,5 @@ cubes:
 | INTTOK GREENTOK {{Syntax.red = None; Syntax.green = Some $1; Syntax.blue = None}}
 | INTTOK BLUETOK {{Syntax.red = None; Syntax.green = None; Syntax.blue = Some $1}}
 
-
-// grab:
-// | cubes COMMATOK grab {[$1] @ $3} 
-// | cubes { [$1] }
-
-// cubes: 
-// | INTTOK REDTOK {Syntax.Red $1} 
-// | INTTOK BLUETOK {Syntax.Blue $1}
-// | INTTOK GREENTOK {Syntax.Green $1}
-
-
 eof:
 | EOF {[]}
