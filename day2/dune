@@ -1,0 +1,14 @@
+(executable
+ (public_name day2)
+ (name day2)
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries containers menhirLib)
+ (flags
+  (:standard -w -66)))
+
+(menhir
+ (modules inputgram)
+ (flags --explain --inspection --table --dump))
+
+(ocamllex inputlex)
