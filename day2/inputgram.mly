@@ -29,7 +29,7 @@ game:
 
 grabs:
 | cubes SEMICOLONTOK grabs {$1 :: $3}
-| cubes { [] }
+| cubes { [$1] }
 
 
 cubes:
