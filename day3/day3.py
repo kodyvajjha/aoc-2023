@@ -18,14 +18,6 @@ main_grid = input()
 n = len(main_grid) 
 m = len(main_grid[0])
 
-def is_symbol(c):
-    if c.isdigit():
-        return False 
-    elif c == '.':
-        return False 
-    else:
-        return True
-
 def get_ints(input):
   pos = {}
   for x in range(len(input)):
@@ -36,7 +28,6 @@ def get_ints(input):
           
 def part1(input):
   table = get_ints(input)
-  print(table)
   ans = []
   for i in range(0,n):
     for j in range(0,m):
@@ -44,15 +35,23 @@ def part1(input):
       for x in range(-1,2):
         for y in range(-1,2):
           try:
-            # print(is_symbol(input[i][j]))
-            assert (is_symbol(input[i][j]))
+            assert not (input[i][j] == "." or input[i][j].isdigit())
             value = table[(i+x,j+y)] 
-            # print(value)
             gridset.add(int(value))
           except:
             ans += []
       ans += list(gridset)
   return sum(ans)
+
+
+# Part 2 
+
+def is_gear(c):
+    if c == "*":
+        return True 
+    else:
+        return False 
+
 
 if __name__ == "__main__":
     # print(list(map(lambda x: is_symbol(x), '...*23....')))
