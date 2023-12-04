@@ -1,12 +1,16 @@
+[@@@warning "-32"]
+
 let _test =
-  {|Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+  {|
+Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
 Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
 Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
-Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11|}
+Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
+|}
 
-module Syntax = struct
+module Card = struct
   type t = {
     id: int;
     winners: int list;
@@ -51,7 +55,7 @@ module Part1 = struct
     | [ _ ] -> 1
     | _ :: sc -> 2 * score sc
 
-  let score_list (card : Syntax.t) =
+  let score_list (card : Card.t) =
     let have = card.have in
     let winning = card.winners in
     let matches =
@@ -59,14 +63,37 @@ module Part1 = struct
     in
     score matches
 
-  let ans card = CCList.fold_left ( + ) 0 (CCList.map score_list card)
+  let ans cards = CCList.fold_left ( + ) 0 (CCList.map score_list cards)
+end
+
+module Part2 = struct
+  let matches (card : Card.t) =
+    ( card.id,
+      CCList.filter
+        (fun x -> CCList.exists (fun y -> y = x) card.have)
+        card.winners
+      |> CCList.length )
+
+  let process_matches (tbl : (int, int) Hashtbl.t) ((id, matches) : int * int) =
+    for m = 1 to matches do
+      let copies = Hashtbl.find tbl id in
+      CCHashtbl.incr tbl ~by:copies (id + m)
+    done
+
+  let ans cards =
+    let tbl = Hashtbl.create 200 in
+    for id = 1 to CCList.length cards do
+      Hashtbl.add tbl id 1
+    done;
+    let matches = CCList.map matches cards in
+    List.iter (process_matches tbl) matches;
+    CCList.fold_left ( + ) 0 (List.map snd (CCHashtbl.to_list tbl))
 end
 
 let () =
-  CCFormat.printf "%a" (CCList.pp Syntax.pp)
-    (Syntax.parse_file ~input:"input.txt")
-(* (Syntax._parse_string ~input:_test) *)
+  let card = Card.parse_file ~input:"input.txt" in
+  CCFormat.printf "Part 1 : %d" (Part1.ans card)
 
 let () =
-  let card = Syntax.parse_file ~input:"input.txt" in
-  CCFormat.printf "@.%a" CCFormat.Dump.(int) (Part1.ans card)
+  let cards = Card.parse_file ~input:"input.txt" in
+  CCFormat.printf "@.Part 2 : %d" (Part2.ans cards)
