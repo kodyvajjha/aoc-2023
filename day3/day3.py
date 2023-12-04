@@ -1,4 +1,6 @@
 import re 
+import math
+import numpy as np 
 
 def input():
   file_path = './day3/input.txt' 
@@ -52,7 +54,25 @@ def is_gear(c):
     else:
         return False 
 
+def part2(input):
+  table = get_ints(input)
+  ans = []
+  for i in range(0,n):
+    for j in range(0,m):
+      gridset = set()
+      for x in range(-1,2):
+        for y in range(-1,2):
+          try:
+            assert (input[i][j] == "*")
+            value = table[(i+x,j+y)] 
+            gridset.add(int(value))
+          except:
+            ans += []
+      if len(gridset) > 1:
+        ans += [np.prod(np.array(list(gridset)))]
+  return sum(ans)
+
 
 if __name__ == "__main__":
     # print(list(map(lambda x: is_symbol(x), '...*23....')))
-    print(part1(main_grid))
+    print(part2(main_grid))
