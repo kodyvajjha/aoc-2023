@@ -48,12 +48,6 @@ def part1(input):
 
 # Part 2 
 
-def is_gear(c):
-    if c == "*":
-        return True 
-    else:
-        return False 
-
 def part2(input):
   table = get_ints(input)
   ans = []
@@ -74,5 +68,5 @@ def part2(input):
 
 
 if __name__ == "__main__":
-    # print(list(map(lambda x: is_symbol(x), '...*23....')))
+    print(part1(main_grid))
     print(part2(main_grid))
