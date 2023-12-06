@@ -36,63 +36,87 @@ humidity-to-location map:
 56 93 4
 |}
 
-module Almanac = struct
-  type seeds = int list [@@deriving show]
+type seeds = int list [@@deriving show]
 
-  type mapping = line list
+type mapping = line list
 
-  and line = {
-    destination_start: int;
-    source_start: int;
-    length: int;
-  }
-  [@@deriving show { with_path = false }]
+and line = {
+  destination_start: int;
+  source_start: int;
+  length: int;
+}
+[@@deriving show { with_path = false }]
 
-  type map = {
-    source: string;
-    destination: string;
-    mapping: mapping;
-  }
-  [@@deriving show { with_path = false }]
+type map = {
+  source: string;
+  destination: string;
+  mapping: mapping;
+}
+[@@deriving show { with_path = false }]
 
-  type t = {
-    seeds: seeds;
-    maps: map list;
-  }
-  [@@deriving show { with_path = false }]
+type t = {
+  seeds: seeds;
+  maps: map list;
+}
+[@@deriving show { with_path = false }]
 
-  module Parse = struct
-    let line =
-      let open CCParse in
-      let* destination_start = U.int <* white in
-      let* source_start = U.int <* white in
-      let* length = U.int in
-      pure { destination_start; source_start; length }
+module Part1 = struct
+  let tbl_of_mapping mapping =
+    let tbl_of_line l =
+      let src = CCList.(l.source_start -- (l.source_start + l.length - 1)) in
+      let dst =
+        CCList.(l.destination_start -- (l.destination_start + l.length - 1))
+      in
+      CCList.combine src dst
+    in
+    CCList.flatten (CCList.map tbl_of_line mapping) |> CCHashtbl.of_list
 
-    let mapping : mapping CCParse.t = CCParse.many line
+  let ans almanac =
+    let open CCList in
+    let tbls =
+      let+ map = almanac.maps in
+      tbl_of_mapping map.mapping
+    in
+    let ints =
+      let+ seed = almanac.seeds in
+      CCList.fold_left
+        (fun k tbl -> CCHashtbl.get_or tbl k ~default:k)
+        seed tbls
+    in
+    CCList.fold_left min Int.max_int ints
+end
 
-    let map_ : map CCParse.t =
-      let open CCParse in
-      let* source = U.word <* skip (string "-to-") in
-      let* destination = U.word <* skip white <* skip (string "map:") in
-      let* mapping = mapping <* skip white in
-      pure { source; destination; mapping }
+module Parse = struct
+  let line =
+    let open CCParse in
+    let* destination_start = U.int <* white in
+    let* source_start = U.int <* white in
+    let* length = U.int in
+    pure { destination_start; source_start; length }
 
-    let seeds : seeds CCParse.t =
-      let open CCParse in
-      let* seeds = skip_space *> string "seeds:" *> sep ~by:white U.int in
-      pure @@ seeds
+  let mapping : mapping CCParse.t = CCParse.many line
 
-    let almanac : t CCParse.t =
-      let open CCParse in
-      let* seeds = seeds <* skip white in
-      let* maps = many map_ in
+  let map_ : map CCParse.t =
+    let open CCParse in
+    let* source = U.word <* skip (string "-to-") in
+    let* destination = U.word <* skip white <* skip (string "map:") in
+    let* mapping = mapping <* skip white in
+    pure { source; destination; mapping }
 
-      pure { seeds; maps }
-  end
+  let seeds : seeds CCParse.t =
+    let open CCParse in
+    let+ seeds = skip_space *> string "seeds:" *> sep ~by:white U.int in
+    seeds
+
+  let almanac : t CCParse.t =
+    let open CCParse in
+    let* seeds = seeds <* skip white in
+    let* maps = many map_ in
+
+    pure { seeds; maps }
 end
 
 let () =
-  match CCParse.parse_string_e Almanac.Parse.almanac test with
-  | Ok seeds -> CCFormat.printf "%a" Almanac.pp seeds
+  match CCParse.parse_file_e Parse.almanac "input.txt" with
+  | Ok seeds -> CCFormat.printf "%a" CCFormat.(int) (Part1.ans seeds)
   | Error err -> failwith @@ CCFormat.sprintf "failed : %a" CCParse.Error.pp err
