@@ -61,27 +61,31 @@ type t = {
 [@@deriving show { with_path = false }]
 
 module Part1 = struct
-  let tbl_of_mapping mapping =
-    let tbl_of_line l =
-      let src = CCList.(l.source_start -- (l.source_start + l.length - 1)) in
-      let dst =
-        CCList.(l.destination_start -- (l.destination_start + l.length - 1))
-      in
-      CCList.combine src dst
+  let apply mapping seed =
+    let matches =
+      CCList.map
+        (fun line ->
+          if line.source_start <= seed && seed < line.source_start + line.length
+          then
+            Some (seed - line.source_start + line.destination_start)
+          else
+            None)
+        mapping
     in
-    CCList.flatten (CCList.map tbl_of_line mapping) |> CCHashtbl.of_list
+    match CCList.keep_some matches with
+    | [] -> seed
+    | [ x ] -> x
+    | _ -> failwith "more than one match!"
 
   let ans almanac =
     let open CCList in
     let tbls =
       let+ map = almanac.maps in
-      tbl_of_mapping map.mapping
+      map.mapping
     in
     let ints =
       let+ seed = almanac.seeds in
-      CCList.fold_left
-        (fun k tbl -> CCHashtbl.get_or tbl k ~default:k)
-        seed tbls
+      CCList.fold_left (fun k mapping -> apply mapping k) seed tbls
     in
     CCList.fold_left min Int.max_int ints
 end
