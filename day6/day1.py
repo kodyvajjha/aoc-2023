@@ -25,4 +25,10 @@ def part1():
     ans *= ways(T,D)
   return ans
 
+
+def part2():
+  # just concatenate and brute force
+  return ways(46857582,208141212571410)
+
 print(part1())
+print(part2())
