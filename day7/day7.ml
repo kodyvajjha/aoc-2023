@@ -94,7 +94,6 @@ module Part1 = struct
     let sorted =
       CCList.sort (fun p1 p2 -> Hand.compare p1.hand p2.hand) parsed_input
     in
-    CCFormat.printf "@.Sorted : %a@." CCFormat.Dump.(list pp_pair) sorted;
     CCList.fold_left ( + ) 0 (CCList.mapi (fun i p -> (i + 1) * p.bid) sorted)
 end
 
