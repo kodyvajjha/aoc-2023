@@ -14,8 +14,7 @@ module Directions = struct
     | Right
   [@@deriving show { with_path = false }]
 
-  type nodes = (string * (string * string)) list
-  [@@deriving show { with_path = false }]
+  type nodes = (string * (string * string)) list [@@deriving show]
 
   type t = {
     moves: moves;
@@ -76,8 +75,58 @@ module Part1 = struct
     aux 0 map.moves "AAA"
 end
 
+module Part2 = struct
+  let rec gcd u v =
+    if v <> 0 then
+      gcd v (u mod v)
+    else
+      abs u
+
+  let lcm m n =
+    match m, n with
+    | 0, _ | _, 0 -> 0
+    | m, n -> abs (m * n) / gcd m n
+
+  let ans (dirmap : Directions.t) =
+    let ends_with_char str c =
+      let len = String.length str in
+      if len = 0 then
+        false
+      else
+        str.[len - 1] = c
+    in
+    let tbl = dirmap.nodes |> CCHashtbl.of_list in
+    let starts =
+      CCList.(
+        filter (fun (x, _) -> ends_with_char x 'A') dirmap.nodes >|= fun x ->
+        fst x)
+    in
+    let rec aux steps moves start =
+      if ends_with_char start 'Z' then
+        steps
+      else (
+        match moves with
+        | [] -> aux steps dirmap.moves start
+        | l :: ls ->
+          (match l with
+          | Directions.Left -> aux (steps + 1) ls (Hashtbl.find tbl start |> fst)
+          | Directions.Right ->
+            aux (steps + 1) ls (Hashtbl.find tbl start |> snd))
+      )
+    in
+    let steps = CCList.map (aux 0 dirmap.moves) starts in
+    let nsteps = CCList.fold_left lcm 1 steps in
+    nsteps
+end
+
 let () =
   match CCParse.parse_file_e Parse.directions "input.txt" with
   (* | Ok dirs -> CCFormat.printf "%a" Directions.pp dirs *)
   | Ok dirs -> CCFormat.printf "%d" (Part1.ans dirs)
+  | Error err -> failwith @@ CCFormat.sprintf "failed : %a" CCParse.Error.pp err
+
+let () =
+  match CCParse.parse_file_e Parse.directions "input.txt" with
+  (* | Ok dirs -> CCFormat.printf "%a" Directions.pp dirs *)
+  | Ok dirs -> CCFormat.printf "@.%d" (Part2.ans dirs)
   | Error err -> failwith @@ CCFormat.sprintf "failed : %a" CCParse.Error.pp err
