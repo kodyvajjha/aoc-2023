@@ -60,15 +60,24 @@ end
 module Part1 = struct
   let ans (map : Directions.t) =
     let tbl = map.nodes |> CCHashtbl.of_list in
-    let start, _next = map.nodes |> List.hd in
-    let moves = map.moves in
-    let seen = ref false in
-    while true do
-      ()
-    done
+    let rec aux steps moves start =
+      if start = "ZZZ" then
+        steps
+      else (
+        match moves with
+        | [] -> aux steps map.moves start
+        | l :: ls ->
+          (match l with
+          | Directions.Left -> aux (steps + 1) ls (Hashtbl.find tbl start |> fst)
+          | Directions.Right ->
+            aux (steps + 1) ls (Hashtbl.find tbl start |> snd))
+      )
+    in
+    aux 0 map.moves "AAA"
 end
 
 let () =
-  match CCParse.parse_string_e Parse.directions test with
-  | Ok seeds -> CCFormat.printf "%a" Directions.pp seeds
+  match CCParse.parse_file_e Parse.directions "input.txt" with
+  (* | Ok dirs -> CCFormat.printf "%a" Directions.pp dirs *)
+  | Ok dirs -> CCFormat.printf "%d" (Part1.ans dirs)
   | Error err -> failwith @@ CCFormat.sprintf "failed : %a" CCParse.Error.pp err
