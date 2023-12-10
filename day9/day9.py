@@ -1,6 +1,4 @@
-import re 
-import math
-import numpy as np 
+from functools import reduce 
 
 def input():
   file_path = './day9/input.txt' 
@@ -19,10 +17,19 @@ def lasts(line):
     line = diff(line)
   return sum(cur) 
 
+def firsts(line):
+  cur = [] 
+  while not all(element == 0 for element in line):
+    cur.append(line[0])
+    line = diff(line)
+  final = list(reversed(cur))
+  new = []
+  return reduce(lambda x,y: y-x, final)
+
 def part1(lines): 
   return sum([lasts(line) for line in lines])
+def part2(lines): 
+  return sum([firsts(line) for line in lines])
 
-
-# print(sum(lasts([1,3,   6,  10,  15,  21])))
-# print(sum(lasts([10,13,16,21,30,45])))
 print(part1(input()))
+print(part2(input()))
