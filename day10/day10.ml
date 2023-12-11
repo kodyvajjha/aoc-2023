@@ -1,7 +1,5 @@
 [@@@warning "-32-26"]
 
-let () = Printexc.record_backtrace true
-
 module Example = struct
   let one = {|-L|F7
 7S-7|
@@ -14,6 +12,47 @@ L|-JF|}
 SJLL7
 |F--J
 LJ.LJ|}
+
+  let three =
+    {|...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........|}
+
+  let four =
+    {|.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...|}
+
+  let five =
+    {|FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L|}
+
+  let six = {|-L.F7
+7S7.|
+L||.|
+-LJ.|
+L|.JF|}
 end
 
 module Grid = struct
@@ -92,38 +131,47 @@ module Part1 = struct
     let initpos = Grid.startpos grid in
     let curpos = ref @@ List.hd @@ Grid.nbrs grid initpos in
     let seen = ref [ initpos; !curpos ] in
-    CCFormat.printf "curpos : %a@.nbrs: %a@.seen: %a@."
-      CCFormat.Dump.(pair int int)
-      !curpos
-      CCFormat.Dump.(list (pair int int))
-      (Grid.nbrs grid !curpos)
-      CCFormat.Dump.(list (pair int int))
-      !seen;
     while
       CCList.filter (fun x -> not (CCList.mem x !seen)) (Grid.nbrs grid !curpos)
       != []
     do
-      (* for _ = 1 to 3 do *)
-      (* CCFormat.printf "nbrs of curpos : %a@."
-         CCFormat.Dump.(list (pair int int))
-         (Grid.nbrs grid !curpos); *)
       let next =
         CCList.filter
           (fun x -> not (CCList.mem x !seen))
           (Grid.nbrs grid !curpos)
         |> List.hd
       in
-      (* CCFormat.printf "filtered : %a@." CCFormat.Dump.(pair int int) next; *)
       curpos := next;
       seen := !seen @ [ next ]
-      (* CCFormat.printf "seen : %a@." CCFormat.Dump.(list (pair int int)) !seen *)
     done;
-    CCList.length !seen / 2
+    !seen, CCList.length !seen / 2
+end
+
+module Part2 = struct
+  (* Using Pick's theorem and the Shoelace formula! *)
+
+  let area points =
+    let rec aux points =
+      match points with
+      | [] -> 0
+      | [ _ ] -> 0
+      | (x1, y1) :: ((x2, y2) as p2) :: xs ->
+        (x1 * y2) - (x2 * y1) + aux (p2 :: xs)
+    in
+    abs @@ (aux points / 2)
+
+  let ans grid =
+    let bdry_path, bdry_count = Part1.ans grid in
+    let area = area (bdry_path @ [ Grid.startpos grid ]) in
+    area - bdry_count + 1
 end
 
 let () =
   let grid = Grid.parse "input.txt" in
   let startpos = Grid.startpos grid in
-  CCFormat.printf "@.Grid: %a@.Ans: %d" Grid.pp grid
-    (* CCFormat.Dump.(list (pair int int)) *)
-    (Part1.ans grid)
+  CCFormat.printf "Part 1: %d" (Part1.ans grid |> snd)
+
+let () =
+  let grid = Grid.parse "input.txt" in
+  let startpos = Grid.startpos grid in
+  CCFormat.printf "@.Part 2: %d@." (Part2.ans grid)
