@@ -99,29 +99,31 @@ module Part1 = struct
       (Grid.nbrs grid !curpos)
       CCFormat.Dump.(list (pair int int))
       !seen;
-    while !curpos != initpos do
+    while
+      CCList.filter (fun x -> not (CCList.mem x !seen)) (Grid.nbrs grid !curpos)
+      != []
+    do
       (* for _ = 1 to 3 do *)
-      CCFormat.printf "nbrs of curpos : %a@."
-        CCFormat.Dump.(list (pair int int))
-        (Grid.nbrs grid !curpos);
-
+      (* CCFormat.printf "nbrs of curpos : %a@."
+         CCFormat.Dump.(list (pair int int))
+         (Grid.nbrs grid !curpos); *)
       let next =
         CCList.filter
           (fun x -> not (CCList.mem x !seen))
           (Grid.nbrs grid !curpos)
         |> List.hd
       in
-      CCFormat.printf "filtered : %a@." CCFormat.Dump.(pair int int) next;
+      (* CCFormat.printf "filtered : %a@." CCFormat.Dump.(pair int int) next; *)
       curpos := next;
-      seen := !seen @ [ next ];
-      CCFormat.printf "seen : %a@." CCFormat.Dump.(list (pair int int)) !seen
+      seen := !seen @ [ next ]
+      (* CCFormat.printf "seen : %a@." CCFormat.Dump.(list (pair int int)) !seen *)
     done;
-    !seen
+    CCList.length !seen / 2
 end
 
 let () =
-  let grid = Grid.parse Example.one in
+  let grid = Grid.parse "input.txt" in
   let startpos = Grid.startpos grid in
-  CCFormat.printf "@.Grid: %a@.Current queue: %a" Grid.pp grid
-    CCFormat.Dump.(list (pair int int))
+  CCFormat.printf "@.Grid: %a@.Ans: %d" Grid.pp grid
+    (* CCFormat.Dump.(list (pair int int)) *)
     (Part1.ans grid)
