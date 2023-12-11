@@ -1,0 +1,8 @@
+(executable
+ (public_name day10)
+ (name day10)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.enum ppx_deriving.ord))
+ (libraries containers)
+ (flags
+  (:standard -w -66)))
