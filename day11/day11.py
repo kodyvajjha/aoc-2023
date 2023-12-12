@@ -22,15 +22,6 @@ def empty_rows_between(g1,g2):
 def empty_cols_between(g1,g2):
   return [c for c in empty_cols if min(g1[1],g2[1]) < c and c < max(g1[1],g2[1])]
   
-
-# def expansionEffectFrom(start, end, empties):
-#     out = 0
-#     for place in range(min(start, end), max(start, end)+1):
-#         if place in empties:
-#             out += 2
-
-#     return out
-
 def expanded_distance(scale,g1,g2):
   nr = len(empty_rows_between(g1,g2)) 
   nc = len(empty_cols_between(g1,g2)) 
