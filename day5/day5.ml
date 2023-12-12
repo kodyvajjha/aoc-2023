@@ -63,15 +63,14 @@ type t = {
 module Part1 = struct
   let apply mapping seed =
     let matches =
-      CCList.map
-        (fun line ->
-          if line.source_start <= seed && seed < line.source_start + line.length
-          then
-            Some (seed - line.source_start + line.destination_start)
-          else
-            None)
-        mapping
+      let open CCList in
+      let+ { destination_start; source_start; length } = mapping in
+      if source_start <= seed && seed < source_start + length then
+        Some (seed - source_start + destination_start)
+      else
+        None
     in
+
     match CCList.keep_some matches with
     | [] -> seed
     | [ x ] -> x
@@ -88,6 +87,21 @@ module Part1 = struct
       CCList.fold_left (fun k mapping -> apply mapping k) seed tbls
     in
     CCList.fold_left min Int.max_int ints
+end
+
+module Part2 = struct
+  type interval = {
+    low: int;
+    high: int;
+  }
+
+  let interval_of_pair start length = { low = start; high = start + length - 1 }
+
+  let rec intervals (l : int list) =
+    match l with
+    | [] -> []
+    | x :: y :: l -> interval_of_pair x y :: intervals l
+    | _ -> failwith "list does not have even length"
 end
 
 module Parse = struct
@@ -120,7 +134,9 @@ module Parse = struct
     pure { seeds; maps }
 end
 
-let () =
-  match CCParse.parse_file_e Parse.almanac "input.txt" with
-  | Ok seeds -> CCFormat.printf "%a" CCFormat.(int) (Part1.ans seeds)
-  | Error err -> failwith @@ CCFormat.sprintf "failed : %a" CCParse.Error.pp err
+(* let () =
+   match CCParse.parse_file_e Parse.almanac "input.txt" with
+   | Ok seeds -> CCFormat.printf "%a" CCFormat.(int) (Part1.ans seeds)
+   | Error err -> failwith @@ CCFormat.sprintf "failed : %a" CCParse.Error.pp err *)
+
+let () = CCFormat.printf "%a" (CCList.pp CCFormat.(int)) CCList.(79 -- 92)
