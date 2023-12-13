@@ -1,3 +1,4 @@
+from functools import lru_cache
 
 file_path = './day12/input.txt' 
 with open(file_path,'r') as file:
@@ -11,16 +12,16 @@ def record(drawing):
 
 
 def possibilities(drawing):
-    def aux(current_string, index):
+    def aux(s, index):
         if index == len(drawing):
-            result.append(current_string)
+            result.append(s)
             return
 
         if drawing[index] == '?':
-            aux(current_string + '.', index + 1)
-            aux(current_string + '#', index + 1)
+            aux(s + '.', index + 1)
+            aux(s + '#', index + 1)
         else:
-            aux(current_string + drawing[index], index + 1)
+            aux(s + drawing[index], index + 1)
 
     result = []
     aux('', 0)
